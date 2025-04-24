@@ -4,10 +4,10 @@
 source ~/miniforge3/etc/profile.d/conda.sh
 conda activate snparcher
 
-mkdir -p /scratch/gpfs/ml9889/deer/snpArcher/logs
+mkdir -p /scratch/gpfs/ml9889/intro_to_snparcher_on_della/snpArcher/logs
 
 # dry run
-snakemake  --snakefile /scratch/gpfs/ml9889/deer/snpArcher/workflow/Snakefile \
- --directory /scratch/gpfs/ml9889/deer/snpArcher \
+snakemake  --snakefile /scratch/gpfs/ml9889/intro_to_snparcher_on_della/snpArcher/workflow/Snakefile \
+ --directory /scratch/gpfs/ml9889/intro_to_snparcher_on_della/snpArcher \
  --use-conda \
- --dry-run > /scratch/gpfs/ml9889/deer/snpArcher/logs/Ovbor1.2_dry_run.out
+ --dry-run > /scratch/gpfs/ml9889/intro_to_snparcher_on_della/snpArcher/logs/PALLASCAT_TEST_dry_run.out

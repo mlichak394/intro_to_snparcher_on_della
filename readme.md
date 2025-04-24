@@ -7,27 +7,31 @@ These instructions assume you have some general knowledge of the Della cluster, 
 ###
 ## (1) Downloading a reference genome
 
-To run snpArcher you need sequencing data and a reference genome to map it to. Just a few notes on finding and using reference genomes and published sequencing data.
+To run snpArcher you need sequencing data and a reference genome to map it to. 
 
-**An very important thing to note:** one of Della's (many) interesting quirks is that is doesn't have internet access on the compute nodes. What this means for us is that, even though snpArcher has the capability to pull data from e.g. NCBI for you, it won't be able to. Instead, all of our data--reference genome, generated sequencing data and any published sequencing data you might want to use--must be downloaded locally to Della before we can run snpArcher. 
+Just a few notes on finding and using reference genomes and published sequencing data.
+
+**A very important thing to note:** one of Della's (many) interesting quirks is that is doesn't have internet access on the compute nodes. What this means for us is that, even though snpArcher has the capability to pull data from e.g. NCBI for you, it won't be able to. Instead, all of our data--reference genome, generated sequencing data and any published sequencing data you might want to use--must be downloaded locally to Della before we can run snpArcher. 
 
 I have a directory in my scratch called `reference_genomes` where I store well, reference genomes. To find the reference genome for your species, you can go to the [NCBI Genomes resource](https://www.ncbi.nlm.nih.gov/home/genomes/) and type in the scientific name of your species in the search bar. Or, a quick google of "species name genome ncbi" usually does the trick. 
 
 I download reference genomes using ftp:
 
-1. On the NCBI page for your species look for a genome with a "reference" tag and/or a green checkmark. There may be other options besides the genome NCBI considers the current reference. These are probably older genome assemblies, they might be scaffold level or created with older technology. 
+1. On the NCBI page for your species look for a genome with a "reference" tag and/or a green checkmark. There may be other options besides the genome NCBI considers the current reference. These are probably older genome assemblies, they might be scaffold level or have been created with older technology. 
     
-2. Click on think link for the assembly your want to download, then click on "ftp" at the top of the page. 
+2. Click on the link for the assembly you want to download, then click on "FTP" at the top of the page. 
 
 3. Find the link ending in .fna.gz and copy this link (right click and "copy link")
+
     - This the ftp (file transfer protocol) for your reference genome sequence. 
+
     - The other stuff here might link to an annotation file, QC files for the assembly, coding sequences files, RNA transcript sequences, etc. You might need these later for other analyses, but we don't need them for snpArcher.
 
 4. Once you have the ftp link to the reference genome you want to download copied, navigate to the directory where you're going to put your reference genome on Della. 
 
     `cd /scratch/gpfs/ml9889/reference_genomes/genomes`
 
-5. Use `wget` to pull this genome using the ftp link. (**Check:** I think wget is automatically installed in your base environment?). Here I'm pulling the genome for my favorite animal, the Pallas Cat (Otocolobus manul).
+5. Use `wget` to pull this genome using the ftp link. (**Check:** I think wget is automatically installed in your base environment?). Here I'm pulling the genome for my favorite animal, the Pallas Cat (_Otocolobus manul_). They are [upsettingly cute](https://www.youtube.com/watch?v=BVTgx9TpAWM).
 
     `wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/028/564/725/GCA_028564725.2_OtoMan_p1.0/GCA_028564725.2_OtoMan_p1.0_genomic.fna.gz`
 
@@ -218,7 +222,7 @@ GenotypeGVCFs is then used to do the actual calling. Again, at this step calls a
 
 Of note: variant calling is intentionally lenient. It aims to maximize sensitivity (the chance you will pick up on a variant) at the expense of accuracy (you will probably call some variants with little evidence to support them being "real"). While you may include some false positives through this process, you reduce the risk of throwing out true positives.
 
-### Step 3: Annotating Called Variants with Filters
+### Step 4: Annotating Called Variants with Filters
 SNParcher then takes this vcf (which again, may have a lot of false positives!) and "filters" it. I think the language used in a lot of papers I've read describing the processing methods makes this step seem different from what actually happens. At this step, at least in the SNParcher pipeline, nothing is actually removed (removal is often referred to as "hard filtering", and snpArcher does this at a later step). Instead, you're just flagging variants that don't pass certain filters (ie, "soft filtering"). You can choose whether to hard filter them--actually remove them from your dataset--later. 
 
 GATK Best Practices are used here. 

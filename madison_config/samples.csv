@@ -1,0 +1,3 @@
+﻿BioSample,LibraryName,Run,refGenome,refPath,BioProject,fq1,fq2,SampleType
+Manul5,Manul5,SRR28606172,OtoMan_p1.0,/scratch/gpfs/ml9889/intro_to_snparcher_on_della/data/genome/GCA_028564725.2_OtoMan_p1.0_genomic.fna,1,/scratch/gpfs/ml9889/intro_to_snparcher_on_della/data/fastq/SRR28606172_1.fastq.gz,/scratch/gpfs/ml9889/intro_to_snparcher_on_della/data/fastq/SRR28606172_2.fastq.gz,include 
+Oman10,Oman10,SRR5043308,OtoMan_p1.0,/scratch/gpfs/ml9889/intro_to_snparcher_on_della/data/genome/GCA_028564725.2_OtoMan_p1.0_genomic.fna,1,/scratch/gpfs/ml9889/intro_to_snparcher_on_della/data/fastq/SRR5043308_1.fastq.gz,/scratch/gpfs/ml9889/intro_to_snparcher_on_della/data/fastq/SRR5043308_2.fastq.gz,include 

@@ -4,8 +4,8 @@ NOTE: all credit to Brian Arnold -- this is adapted from his excellent ["Intro t
 
 These instructions assume you have some general knowledge of the Della cluster, using conda, scripting, and command line tools, as well as the general concept behind snpArcher and what it's used for. If you don't, days 1 and 2 of Brian's workshop will be very helpful with getting you up to speed. Additionally, take a look at [the snpArcher paper](https://academic.oup.com/mbe/article/41/1/msad270/7466717)!
 
-
-### (1) Downloading a reference genome
+###
+## (1) Downloading a reference genome
 
 To run snpArcher you need sequencing data and a reference genome to map it to. Just a few notes on finding and using reference genomes and published sequencing data.
 
@@ -39,8 +39,8 @@ Now your reference genome is on Della -- yay!
 
 There are other ways to get reference genomes. NCBI has a datasets tool -- this allows you to pull several different files all at once if you maybe wanted to pull the genomic sequence as well as the annotation file and RNA transcripts, etc. Also, maybe the reference genome you want isn't on NCBI. All fine -- get your genome from wherever you can, just make sure it's on Della so snpArcher can find it.
 
-
-### (2) Pulling data from a sequence repository
+###
+## (2) Pulling data from a sequence repository
 
 You will probably have sequencing data you've generated that you want to map to this reference genome. You'll get instructions for downloading your sequencing data from whatever sequencing core sequenced your samples. 
 
@@ -62,8 +62,8 @@ From here you'll need to use the [SRA-toolkit](https://github.com/ncbi/sra-tools
 
 I store my sequencing data in another subdirectory called `raw_seq_data`, organized into further subdirectories by species or project.
 
-
-### (3) Setting up the main snparcher environment
+###
+## (3) Setting up the main snparcher environment
 
 NOTE: the snpArcher [docs](https://snparcher.readthedocs.io/en/latest/setup.html) are good! They aren't super detailed, but they are readable. The github "issues" page is also an excellent resource if you ever run into problems. And, if you need to ask a question, the guys who are currently developing snpArcher seem really nice and helpful. 
 
@@ -83,8 +83,8 @@ Then, you'll need to clone the snpArcher github repo, which contains the pipelin
 
 I've always cloned a new repo for each project. I think this helps prevent me from accidentally overwriting some outputs, and it means you're always getting the newest version of the pipeline when you run it, but it also means you'll have to do some of the setup steps below every time you reclone the repo. 
 
-
-### (4) Configuring snpArcher  
+###
+## (4) Configuring snpArcher  
 
 You will need to get a couple of things set up prior to running snpArcher.
 
@@ -140,8 +140,8 @@ You will need to get a couple of things set up prior to running snpArcher.
 
 4. Be sure to save all of these files: `sample.csv`, `config/config.yaml` and `slurm/config.yaml` before running anything! 
 
-
-### (5) More Della specific set up (script 01)
+###
+## (5) More Della specific set up (script 01)
 
 Copying the rest of this is pretty much directly from Brian, with only minor modifications. Brian provided us with three scripts:
 1. One for setting up environments on Della
@@ -170,8 +170,8 @@ NOTE: You could also do this directly on the command line on the login node, but
 
 MADISON'S NOTE: You have to do this for every snpArcher directory you have. Again, I have separate ones for each of my projects. This means I have a lot of these environments in the hidden `.snakemake` directory. 
         
-
-### (6) Dry run to test snpArcher (script 02)
+###
+## (6) Dry run to test snpArcher (script 02)
 
 Next, let's do a dry run to see if we have everything configured correctly.
 
@@ -179,8 +179,8 @@ Next, let's do a dry run to see if we have everything configured correctly.
 
 If the dry run completes successfully and shows some rules that need to be run, then everything is good to go. However, the number of rules is shows that need to be run isn't the entire story, since some rules are executed only under some conditions that are determined at runtime. In practice, snparcher will likely run thousands of rules and submit thousands of jobs.
 
-
-### (7) Running snpArcher! (script 03)
+###
+## (7) Running snpArcher! (script 03)
 
 Lastly, we can submit the last script `03_submit_smk_job.sh` as a job using the `sbatch` command, specifying the longest time interval possible to ensure it doesn't time out. This job that gets submitted will essentially submit many additional jobs, one for each rule that needs to get run. 
 
@@ -196,29 +196,29 @@ Some more notes:
 
 - Keep an eye on the error log. Scroll to the bottom to see recently submitted jobs. You can `CMD-F` and search for "error" to see if there have been any issues. You don't need to watch it like a hawk, but check in once or twice a day and see where you are in the pipeline and if any issue have arose.
 
-
-### (8) A brief overview of the pipeline
+###
+## (8) A brief overview of the pipeline
 
 It's probably important to understand the steps that get you from BAM to VCF so that you have a basic idea of what's going on at each step. The output of this multi-step process is a raw vcf file that you should consider filtering in different ways. As the SNParcher paper notes, this workflow is pretty much standard in the field. The default parameters are used in most of these steps, per GATK Best Practices.
 
-#### Step 1: Mapping
+### Step 1: Mapping
 Sequence reads are mapped to the reference genome. The bwa-mem mapping stage DOES take into account mappability--how easy it would be to confidently map something to that part of the reference genome). Reads that align to regions of the genome with poor mappability (e.g. highly repetitive regions) will recieve lower mapping quality scores. These lower quality alignments are not removed, as far as I can tell, just annotated.
 
-#### Step 2: Calling Variants
+### Step 2: Calling Variants
 After mapping, GATK is used to call variants for each sample's mapped reads. SNParcher uses HaplotypeCaller for this process. HaplotypeCaller is the recommended variant caller in almost all cases, according to GATK Best Practices, and I believe it's the only caller that SNParcher uses. HaplotypeCaller will call both SNPs and indels at the same time.
 
 Nothing is filtered at this stage. Instead, calls are simply not made if there is not enough confidence for them. The SNParcher code for this step uses the GATK defaults for call confidence, which you can view [here, in the variant calling tutorial](https://currentprotocols.onlinelibrary.wiley.com/doi/10.1002/0471250953.bi1110s43). The output of this step is a gvcf, which includes reference confidence scores (support for the variant at that site), one for each sample. Parameters that also affect calls are `--min-pruning` and `--min-dangling-branch-length` which are semi-set in the config file. These are set when you decide whether to use the low-coverage pipeline (<10X) or the higher coverage one (>10X). 
 
 Note that the process of calling variants occurs _per sample_. 
 
-#### Step 3: Calling Genotypes
+### Step 3: Calling Genotypes
 The next step is to call genotypes and aggregate the gvcfs into a single vcf containing data from all samples. To make this efficient, SNParcher first uses GenomicsDBImport. I don't 100% understand what's going on here, but I don't think it matters too much. I think it's just organizing the computing work to be more efficient. 
 
 GenotypeGVCFs is then used to do the actual calling. Again, at this step calls are just not made if there is not enough evidence to support them. Default call confidence thresholds are used (see the tutorial above, or ask chatGPT what they are). The one parameter that is used that you set is the prior probability of heterozygosity, which is set in the config file. The default value in the config (0.005) is higher that GATK's default (0.001). I don't really understand the implications of this, or why they made the decision to have this as the default.
 
 Of note: variant calling is intentionally lenient. It aims to maximize sensitivity (the chance you will pick up on a variant) at the expense of accuracy (you will probably call some variants with little evidence to support them being "real"). While you may include some false positives through this process, you reduce the risk of throwing out true positives.
 
-#### Step 3: Annotating Called Variants with Filters
+### Step 3: Annotating Called Variants with Filters
 SNParcher then takes this vcf (which again, may have a lot of false positives!) and "filters" it. I think the language used in a lot of papers I've read describing the processing methods makes this step seem different from what actually happens. At this step, at least in the SNParcher pipeline, nothing is actually removed (removal is often referred to as "hard filtering", and snpArcher does this at a later step). Instead, you're just flagging variants that don't pass certain filters (ie, "soft filtering"). You can choose whether to hard filter them--actually remove them from your dataset--later. 
 
 GATK Best Practices are used here. 
@@ -237,8 +237,8 @@ If a variant gets a filter flag it did not "pass" that filter. Variants with fil
 
 After all of this, you get a raw.vcf.gz with these flags on sites that didn't pass. 
 
-
-### (9) Interpreting the outputs in the results directory
+###
+## (9) Interpreting the outputs in the results directory
 
 The main SNParcher pipeline gives you a final vcf file that ends with raw.vcf.gz. This vcf contains all of the samples you input and variants (SNPs and indels) called. 
 
@@ -246,7 +246,7 @@ If you set SampleType to "include" in your sample.csv, SNParcher will run its po
 
 Here are the steps the postprocessing module performs:
 
-**Step 1: Basic Filtering**:
+### Step 1: Basic Filtering
 At this step, SNParcher does three things:
 
 1. removes those samples that you told it to exclude in the sample.csv file, if any
@@ -277,9 +277,7 @@ At this step, SNParcher does three things:
 
 The output here is the filtered.vcf.gz file.
 
-
-**STEP 2: Strict Filtering**:
-
+### Step 2: Strict Filtering
 Then SNParcher will use bcftools to filter according to the parameters you specify in the config file, and split the vcf into one for SNPs and one for indels. 
 
 1. excludes variants in regions of the genome comprised of small contigs 

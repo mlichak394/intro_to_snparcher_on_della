@@ -1,4 +1,4 @@
-### Getting published data on Della 
+# Getting published data on Della 
 
 To run snpArcher you need sequencing data and a reference genome to map it to. 
 

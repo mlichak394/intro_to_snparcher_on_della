@@ -17,40 +17,50 @@ set-threads:
   # Reference Genome Processing. Does NOT use more than 1 thread.
   download_reference: 1
   index_reference: 1
+
+  # Mappability
+  genmap: 10 # Can use more than 1 thread
+  mappability_bed: 1 # Does NOT use more than 1 thread
+
+  # Fastq Processing. Can use more than 1 thread.
+  get_fastq_pe: 8 
+  fastp: 8
+
+  # Alignment. Can use more than 1 thread, except merge_bams.
+  bwa_map: 20
+  dedup: 20
+  merge_bams: 1 # Does NOT use more than 1 thread.
+
   # Interval Generation. Does NOT use more than 1 thread.
   format_interval_list: 1
   create_gvcf_intervals: 1
   create_db_intervals: 1
   picard_intervals: 1
-  # Mappability
-  genmap: 10 # Can use more than 1 thread
-  mappability_bed: 1 # Does NOT use more than 1 thread
-  # Fastq Processing. Can use more than 1 thread.
-  get_fastq_pe: 8 
-  fastp: 8
-  # Alignment. Can use more than 1 thread, except merge_bams.
-  bwa_map: 20
-  dedup: 20
-  merge_bams: 1 # Does NOT use more than 1 thread.
+
   # GVCF 
   bam2gvcf: 1 # Should be run with no more than 2 threads. # I ran with 2 threads and got an email from the cluster saying I was using 50% of resources and this rule probably didn't need 2 threads
   concat_gvcfs: 1 # Does NOT use more than 1 thread.
   bcftools_norm: 1 # Does NOT use more than 1 thread.
   create_db_mapfile: 1 # Does NOT use more than 1 thread.
   gvcf2DB: 2 # Should be run with no more than 2 threads.
-  # VCF
-  DB2vcf: 2 # Should be run with no more than 2 threads.
-  filterVcfs: 2 # Should be run with no more than 2 threads.
-  sort_gatherVcfs: 2 # Should be run with no more than 2 threads.
+
+  # VCF. Should be run with no more than 2 threads.
+  DB2vcf: 2 
+  filterVcfs: 2 
+  sort_gatherVcfs: 2 
+
   # Callable Bed
-  compute_d4: 4 # Can use more than 1 thread
+  compute_d4: 6 # Can use more than 1 thread
+  clam_loci: 6 # Can use more than 1 thread
   create_cov_bed: 1 # Does NOT use more than 1 thread.
   merge_d4: 1 # Does NOT use more than 1 thread.
+
   # Summary Stats Does NOT use more than 1 thread.
   bam_sumstats: 1
   collect_covstats: 1
   collect_fastp_stats: 1
   collect_sumstats: 1
+
   # QC Module Does NOT use more than 1 thread.
   qc_admixture: 1
   qc_check_fai: 1
@@ -60,10 +70,12 @@ set-threads:
   qc_setup_admixture: 1
   qc_subsample_snps: 1
   qc_vcftools_individuals: 1
+
   # MK Module Does NOT use more than 1 thread.
   mk_degenotate: 1
   mk_prep_genome: 1
   mk_split_samples: 1
+
   # Postprocess Module Does NOT use more than 1 thread.
   postprocess_strict_filter: 1
   postprocess_basic_filter: 1
@@ -71,6 +83,7 @@ set-threads:
   postprocess_subset_indels: 1
   postprocess_subset_snps: 1
   postprocess_update_bed: 1
+
   # Trackhub Module Does NOT use more than 1 thread.
   trackhub_bcftools_depth: 1
   trackhub_bedgraph_to_bigwig: 1
@@ -82,12 +95,6 @@ set-threads:
   trackhub_strip_vcf: 1
   trackhub_vcftools_freq: 1
   trackhub_write_hub_files: 1
-  # Sentieon Tools. Can use more than 1 thread, except sentieon_bam_stats.
-  sentieon_map: 1
-  sentieon_dedup: 1
-  sentieon_haplotyper: 1
-  sentieon_combine_gvcf: 1
-  sentieon_bam_stats: 1 # Does NOT use more than 1 thread.
 
 
 # Control other resources used by each rule.
@@ -104,83 +111,83 @@ set-resources:
 #     runtime:
 #     cpus_per_task:
   index_reference:
-    mem_mb: attempt * 20000
+    mem_mb: attempt * 20000 # did not need to increase when running with 800 samples
 #     slurm_partition:
 #     runtime:
 #     cpus_per_task:
 
 #   # Interval Generation
   format_interval_list:
-    mem_mb: attempt * 5000
+    mem_mb: attempt * 5000 # did not need to increase when running with 800 samples
 #     slurm_partition:
 #     runtime:
 #     cpus_per_task:
   create_gvcf_intervals:
-    mem_mb: attempt * 5000
+    mem_mb: attempt * 5000 # did not need to increase when running with 800 samples
 #     slurm_partition:
 #     runtime:
 #     cpus_per_task:
   create_db_intervals:
-    mem_mb: attempt * 5000
+    mem_mb: attempt * 5000 # did not need to increase when running with 800 samples
 #     slurm_partition:
 #     runtime:
 #     cpus_per_task:
   picard_intervals:
-    mem_mb: attempt * 5000
+    mem_mb: attempt * 5000 # did not need to increase when running with 800 samples
 #     slurm_partition:
 #     runtime:
 #     cpus_per_task:
 
 #   # Mappability
   genmap:
-    mem_mb: attempt * 20000
+    mem_mb: attempt * 20000 # did not need to increase when running with 800 samples
 #     slurm_partition:
 #     runtime:
 #     cpus_per_task:
   mappability_bed:
-    mem_mb: attempt * 10000
+    mem_mb: attempt * 10000 # did not need to increase when running with 800 samples
 #     slurm_partition:
 #     runtime:
 #     cpus_per_task:
   
 #   # Fastq Processing
   get_fastq_pe:
-    mem_mb: attempt * 8000
+    mem_mb: attempt * 8000 # did not need to increase when running with 800 samples
 #     slurm_partition:
 #     runtime:
 #     cpus_per_task:
   fastp:
-    mem_mb: attempt * 8000
+    mem_mb: attempt * 8000 # did not need to increase when running with 800 samples
 #     slurm_partition:
 #     runtime:
 #     cpus_per_task:
 
 #   # Alignment  
   bwa_map:
-    mem_mb: attempt * 40000 # was getting a lot of OOM errors with 30000 (but they worked fine resubmitted with 60000)
+    mem_mb: attempt * 40000 # in the past have got OOM errors with 30000. I got a few OOMs with 40000 when running with 800 samples, but they worked fine resubmitted with 80000
 #     slurm_partition:
 #     runtime:
 #     cpus_per_task:
   dedup:
-    mem_mb: attempt * 9000
+    mem_mb: attempt * 9000 # did not need to increase when running with 800 samples
 #     slurm_partition:
 #     runtime:
 #     cpus_per_task:
   merge_bams:
-    mem_mb: attempt * 9000
+    mem_mb: attempt * 9000  # did not need to increase when running with 800 samples
 #     slurm_partition:
 #     runtime:
 #     cpus_per_task:
 
 #   # GVCF  
   bam2gvcf: # HaplotypeCaller
-    mem_mb: attempt * 3000
+    mem_mb: attempt * 3000 # increased to 10000 (and below) when running with 800 samples
     mem_mb_reduced: (attempt * 3000) * 0.9 # Mem allocated to java (tries to prevent OOM errors)
 #     slurm_partition:
     runtime: 4320
 #     cpus_per_task: # Mem allocated to the snakemake job
   concat_gvcfs:
-    mem_mb: attempt * 9000
+    mem_mb: attempt * 9000 # increased to 12000 when running with 800 samples
 #     slurm_partition:
 #     runtime:
 #     cpus_per_task:
@@ -195,7 +202,7 @@ set-resources:
 #     runtime:
 #     cpus_per_task:
   gvcf2DB: # GenomicsDBImport
-    mem_mb: attempt * 32000
+    mem_mb: attempt * 32000 # increased to 48000 (and below) when running with 800 samples
     mem_mb_reduced: (attempt * 32000) * 0.9 # Mem allocated to java (tries to prevent OOM errors)
 #     slurm_partition:
 #     runtime:
@@ -203,7 +210,7 @@ set-resources:
     
 #   # VCF
   DB2vcf: # GenotypeGVCFs
-    mem_mb: attempt * 32000
+    mem_mb: attempt * 32000 # increased to 48000 (and below) when running with 800 samples
     mem_mb_reduced: (attempt * 32000) * 0.9 # Mem allocated to java (tries to prevent OOM errors)
 #     slurm_partition:
 #     runtime:
@@ -236,6 +243,17 @@ set-resources:
 #     slurm_partition:
 #     runtime:
 #     cpus_per_task:
+  clam_loci:
+    mem_mb: attempt * 30000
+    # slurm_partition:
+    # runtime:
+    # cpus_per_task:
+  callable_bed:
+    mem_mb: attempt * 80000
+    # slurm_partition:
+    # runtime:
+    # cpus_per_task:
+
 
 #   # Summary Stats
 #   bam_sumstats:

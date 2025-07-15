@@ -11,6 +11,5 @@ conda activate snparcher
 snakemake --directory /scratch/gpfs/ml9889/intro_to_snparcher_on_della/snpArcher \
  --snakefile /scratch/gpfs/ml9889/intro_to_snparcher_on_della/snpArcher/workflow/Snakefile \
  --cores 1 \
- --use-conda \
  --conda-frontend mamba \
  --conda-create-envs-

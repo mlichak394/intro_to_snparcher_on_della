@@ -2,17 +2,19 @@
 
 All credit to Brian Arnold -- this is adapted from his excellent ["Intro to Comp Bio Workflows" workshop](https://github.com/brian-arnold/intro_compbio_workflows_2024) he gave here in early 2024. If you're just getting started working on Della or doing bioinformatics, I highly recommend looking through all of the readmes in his workshop -- it's a great intro! 
 
-snpArcher has been updated several times since Brian gave this workshop. These updates broke some things, and changes to the pipeline are not always super well documented, so I've modified the instructions for day 3 of his workshop.
+snpArcher is a pipeline for processing DNA sequencing data, particularly sequencing data from non model organisms. The input is raw sequencing data and a reference genome, and the output is a VCF. snpArcher is built with Snakemake, a tool that allows several steps to be carefully chained together, streamlining a workflow. When it works perfectly, it's hands off after set up and runs very efficiently. 
 
-**Last update:** July 15, 2025
+Snakemake, Princeton's Della computing cluster, and snpArcher all have their quirks, and these can be challenging to work through. However, getting snpArcher set up and running is almost always faster than trying to write and troubleshoot independent scripts to process your data.
 
-These instructions assume you have some general knowledge of the Della cluster, using conda, scripting, and command line tools, as well as the general concept behind snpArcher and what it's used for. If you don't, days 1 and 2 of Brian's workshop will be very helpful with getting you up to speed. Additionally, take a look at [the snpArcher paper](https://academic.oup.com/mbe/article/41/1/msad270/7466717)!
+snpArcher has been updated several times since Brian gave this workshop. These updates broke some things in Brian's workshops. Additionally, changes to the pipeline are not always super well documented by the developers. I've modified the instructions for day 3 of Brian's workshop and provided some other info that's hopefully useful to anyone trying to run snpArcher on Della.
 
+## Last update
+July 15, 2025
 
-### Overview of included guides
-01_getting_data: Provides info on how to download sequencing data or a reference genome on Della
+## Overview of included guides
+**01_getting_data:** Provides info on how to download sequencing data or a reference genome on Della
 
-02_running_snparcher: Tutorial for running snpArcher on Della
+**02_running_snparcher:** Tutorial for running snpArcher on Della
 
-03_how_it_works: More info on the architecture of the pipeline and what's happening in key rules
+**03_how_it_works:** More info on the architecture of the pipeline and what's happening in key rules
 

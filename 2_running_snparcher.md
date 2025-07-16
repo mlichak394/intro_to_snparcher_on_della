@@ -69,7 +69,7 @@ Here are some of the settings you will probably want to know about and consider 
        
     - If you want to change any resources for a rule, you need to uncomment the rule line, e.g. `index_reference:` and then whatever you're changing e.g. `mem_mb: attempt * 20000`. If you're not changing the slurm partition (you aren't, as we can't specify these on Della) or the runtime, leave these lines commented. 
        
-    - The changes I made are too lengthy to detail here. You may need to tweak these depending on how much data you have, how big the genome is, how high coverage your data are etc. E.g., if you set your dv_scatter_factor to a lower number, you will run fewer gvcf2DB jobs, but each will require more memory. These are the values I used on my elephant data, which included 100 samples at 10-30X coverage.
+    - The changes I made are too lengthy to detail here. You may need to tweak these depending on how much data you have, how big the genome is, how high coverage your data are etc. E.g., if you set your db_scatter_factor to a lower number, you will run fewer gvcf2DB jobs, but each will require more memory. I included the slurm/config.yaml from my run on the elephant data, which included 100 samples at 10-30X coverage.
 
 4. Be sure to save all of these files: `sample.csv`, `config/config.yaml` and `slurm/config.yaml` before running anything! 
 

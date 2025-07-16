@@ -2,7 +2,7 @@
 # Variables you need to change
 ##############################
 
-samples: "/scratch/gpfs/ml9889/intro_to_snparcher_on_della/madison_config/samples.csv" # path to the sample metadata CSV
+samples: "/scratch/gpfs/ml9889/pallascat/snpArcher/config/samples.csv" # path to the sample metadata CSV
 final_prefix: "pallascat_test" # prefix for final output files
 intervals: True #Set to True if you want to perform variant calling using interval approach.
 sentieon: False #set to True if you want to use sentieon, False if you want GATK

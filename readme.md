@@ -9,7 +9,7 @@ All credit to Brian Arnold -- this guide is adapted from the excellent ["Intro t
 snpArcher has been updated several times since Brian gave this workshop. These updates broke some things in Brian's guide. Additionally, changes to the pipeline are not always super well documented by the developers. I've modified the instructions for day 3 of Brian's workshop and provided some other info that should be useful to anyone trying to run snpArcher on Della.
 
 ## Last update
-July 15, 2025
+July 16, 2025
 
 ## Overview of included guides
 **01_getting_data:** Provides info on how to download sequencing data or a reference genome on Della

@@ -1,448 +1,121 @@
 executor: slurm
 use-conda: True
-jobs: 100 # Have up to N jobs submitted at any given time
-latency-wait: 100 # Wait N seconds for output files due to latency
-retries: 3 # Retry jobs N times.
+jobs: 100                # N jobs submitted at any given time, no point setting higher than ~250
+latency-wait: 100        # Wait N seconds for output files due to latency
+retries: 4               # Retry jobs N times
 
-# These resources will be applied to all rules. Can be overridden on a per-rule basis below.
+# These resources will be applied to all rules, unless overriden on a per-rule basis below.
 default-resources:
   mem_mb: attempt * 4000
-  mem_mb_reduced: (attempt * 4000) * 0.9 # Mem allocated to java for GATK rules (tries to prevent OOM errors)
-  slurm_partition: # was "" -- removed! 
-  slurm_account: # Same as sbatch -A. Not all clusters use this.
-  runtime: 1440 # In minutes (set at 24 hours * 60 min = 2880 min)
+  mem_mb_reduced: (attempt * 4000) * 0.9  # Mem allocated to java for GATK rules (tries to prevent OOM errors)
+  slurm_partition:                        # Leave blank, Della will assign this
+  slurm_account: "campbellstaton"         # Sponsor account, set this or snparcher will try to guess
+  runtime: 720                            # In minutes (I set at 12 hours)
 
-# Control number of threads each rule will use.
+# =============================================================================
+# THREADS 
+#   Control number of threads each rule will use.
+#   Rules not listed use snpArcher's default (1 core)
+# =============================================================================
 set-threads:
-  # Reference Genome Processing. Does NOT use more than 1 thread.
-  download_reference: 1
-  index_reference: 1
+  fastp: 8                          # my test run saturated 6.4 → 8 for headroom
+  bwa_mem: 20                       # 17.8 → 20; don't overrequest or it will reduce N jobs you can run at once
+  markdup_library: 4                # sambamba does not get faster past 4 threads
+  gatk_haplotypecaller_interval: 2  # 1.2 → 2
+  gatk_genomics_db_import: 1        # single-threaded
+  gatk_genotype_gvcfs: 1            # single-threaded
+  variant_filtration: 1             # single-threaded
+  mosdepth: 4                       # 3.1 → 4
+  clam_collect: 6                   # 5.1 → 6
+  clam_loci: 4                      # 2.7 → 4
+  genmap_mappability: 6             # 3.9 → 6
 
-  # Mappability
-  genmap: 10 # Can use more than 1 thread
-  mappability_bed: 1 # Does NOT use more than 1 thread
-
-  # Fastq Processing. Can use more than 1 thread.
-  get_fastq_pe: 8 
-  fastp: 8
-
-  # Alignment. Can use more than 1 thread, except merge_bams.
-  bwa_map: 20
-  dedup: 20
-  merge_bams: 1 # Does NOT use more than 1 thread.
-
-  # Interval Generation. Does NOT use more than 1 thread.
-  format_interval_list: 1
-  create_gvcf_intervals: 1
-  create_db_intervals: 1
-  picard_intervals: 1
-
-  # GVCF 
-  bam2gvcf: 1 # Should be run with no more than 2 threads. # I ran with 2 threads and got an email from the cluster saying I was using 50% of resources and this rule probably didn't need 2 threads
-  concat_gvcfs: 1 # Does NOT use more than 1 thread.
-  bcftools_norm: 1 # Does NOT use more than 1 thread.
-  create_db_mapfile: 1 # Does NOT use more than 1 thread.
-  gvcf2DB: 2 # Should be run with no more than 2 threads.
-
-  # VCF. Should be run with no more than 2 threads.
-  DB2vcf: 2 
-  filterVcfs: 2 
-  sort_gatherVcfs: 2 
-
-  # Callable Bed
-  compute_d4: 6 # Can use more than 1 thread
-  clam_loci: 6 # Can use more than 1 thread
-  create_cov_bed: 1 # Does NOT use more than 1 thread.
-  merge_d4: 1 # Does NOT use more than 1 thread.
-
-  # Summary Stats Does NOT use more than 1 thread.
-  bam_sumstats: 1
-  collect_covstats: 1
-  collect_fastp_stats: 1
-  collect_sumstats: 1
-
-  # QC Module Does NOT use more than 1 thread.
-  qc_admixture: 1
-  qc_check_fai: 1
-  qc_generate_coords_file: 1
-  qc_plink: 1
-  qc_qc_plots: 1
-  qc_setup_admixture: 1
-  qc_subsample_snps: 1
-  qc_vcftools_individuals: 1
-
-  # MK Module Does NOT use more than 1 thread.
-  mk_degenotate: 1
-  mk_prep_genome: 1
-  mk_split_samples: 1
-
-  # Postprocess Module Does NOT use more than 1 thread.
-  postprocess_strict_filter: 1
-  postprocess_basic_filter: 1
-  postprocess_filter_individuals: 1
-  postprocess_subset_indels: 1
-  postprocess_subset_snps: 1
-  postprocess_update_bed: 1
-
-  # Trackhub Module Does NOT use more than 1 thread.
-  trackhub_bcftools_depth: 1
-  trackhub_bedgraph_to_bigwig: 1
-  trackhub_calc_pi: 1
-  trackhub_calc_snpden: 1
-  trackhub_calc_tajima: 1
-  trackhub_chrom_sizes: 1
-  trackhub_convert_to_bedgraph: 1
-  trackhub_strip_vcf: 1
-  trackhub_vcftools_freq: 1
-  trackhub_write_hub_files: 1
-
-
-# Control other resources used by each rule.
+# =============================================================================
+# RESOURCES 
+#   For rules that need something different than the defaults set above
+# =============================================================================
 set-resources:
-#   # Reference Genome Processing
-#   copy_reference:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   download_reference:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-  index_reference:
-    mem_mb: attempt * 20000 # did not need to increase when running with 800 samples
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
+# --- Fastq Processing ---
+  fastp: 
+    mem_mb: attempt * 4000                  # peak RSS 1.3 GB → 4.0 GB for headroom
+    runtime: attempt * 120                  # peak 0.5h → 2h for headroom
 
-#   # Interval Generation
-  format_interval_list:
-    mem_mb: attempt * 5000 # did not need to increase when running with 800 samples
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-  create_gvcf_intervals:
-    mem_mb: attempt * 5000 # did not need to increase when running with 800 samples
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-  create_db_intervals:
-    mem_mb: attempt * 5000 # did not need to increase when running with 800 samples
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-  picard_intervals:
-    mem_mb: attempt * 5000 # did not need to increase when running with 800 samples
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
+# --- Mapping ---
+  bwa_mem:
+    mem_mb: attempt * 36000                 # mean 36, max 70 → 36 GB; Will increase past 70 on retries
+    runtime: attempt * 720                  # 6h → 12h; Highly recommend first attempt <24 hours if possible
+  markdup_library:
+    mem_mb: attempt * 8000                  # max 4 → 8 for headroom (NOTE: needs 20 GB per billion read pairs)
+    runtime: attempt * 120                  # 0.5h → 2h      
 
-#   # Mappability
-  genmap:
-    mem_mb: attempt * 20000 # did not need to increase when running with 800 samples
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-  mappability_bed:
-    mem_mb: attempt * 10000 # did not need to increase when running with 800 samples
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-  
-#   # Fastq Processing
-  get_fastq_pe:
-    mem_mb: attempt * 8000 # did not need to increase when running with 800 samples
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-  fastp:
-    mem_mb: attempt * 8000 # did not need to increase when running with 800 samples
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-
-#   # Alignment  
-  bwa_map:
-    mem_mb: attempt * 40000 # in the past have got OOM errors with 30000. I got a few OOMs with 40000 when running with 800 samples, but they worked fine resubmitted with 80000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-  dedup:
-    mem_mb: attempt * 9000 # did not need to increase when running with 800 samples
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-  merge_bams:
-    mem_mb: attempt * 9000  # did not need to increase when running with 800 samples
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-
-#   # GVCF  
-  bam2gvcf: # HaplotypeCaller
-    mem_mb: attempt * 3000 # increased to 10000 (and below) when running with 800 samples
-    mem_mb_reduced: (attempt * 3000) * 0.9 # Mem allocated to java (tries to prevent OOM errors)
-#     slurm_partition:
-    runtime: 4320
-#     cpus_per_task: # Mem allocated to the snakemake job
-  concat_gvcfs:
-    mem_mb: attempt * 9000 # increased to 12000 when running with 800 samples
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   bcftools_norm:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   create_db_mapfile:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-  gvcf2DB: # GenomicsDBImport
-    mem_mb: attempt * 32000 # increased to 48000 (and below) when running with 800 samples
-    mem_mb_reduced: (attempt * 32000) * 0.9 # Mem allocated to java (tries to prevent OOM errors)
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-    
-#   # VCF
-  DB2vcf: # GenotypeGVCFs
-    mem_mb: attempt * 32000 # increased to 48000 (and below) when running with 800 samples
-    mem_mb_reduced: (attempt * 32000) * 0.9 # Mem allocated to java (tries to prevent OOM errors)
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-
-  filterVcfs:
-    mem_mb: attempt * 4000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-  sort_gatherVcfs:
-    mem_mb: attempt * 9000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-
-#   # Callable Bed  
-#   compute_d4:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-  create_cov_bed:
-    mem_mb: attempt * 10000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-  merge_d4:
-    mem_mb: attempt * 10000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
+# --- Callable Sites ---   
+  # genome-driven (cost depends on genome, not sample count)
+  # genmap builds an index of the reference; memory ≈ 10× genome size (e.g. 3.6 Gb genome needs 36 GB memory)
+  genmap_index:
+    mem_mb: attempt * 40000    # 36 GB + some headroom
+    runtime: attempt * 120     # 0.5h → 2h
+  genmap_mappability:
+    mem_mb: attempt * 40000    # 36 GB + some headroom
+    runtime: attempt * 120     # 1.25h → 2h
+  # cohort-driven (cost grows with sample count)
+  # values from the test will be an underestimate and not very helpful. Start with these, then increase if needed.
   clam_loci:
-    mem_mb: attempt * 30000
-    # slurm_partition:
-    # runtime:
-    # cpus_per_task:
-  callable_bed:
-    mem_mb: attempt * 80000
-    # slurm_partition:
-    # runtime:
-    # cpus_per_task:
+    mem_mb: attempt * 16000    
+    runtime: attempt * 1440    
+  callable_sites_bed:
+    mem_mb: attempt * 16000
+    runtime: attempt * 1440          
+  coverage_bed:
+    mem_mb: attempt * 16000
+    runtime: attempt * 1440                  
+  mappability_bed: 
+    mem_mb: attempt * 16000
+    runtime: attempt * 1440                 
+  callable_coverage_thresholds:
+    mem_mb: attempt * 16000
+    runtime: attempt * 1440                  
 
+# --- Variant Calling ---
+  # per interval
+  gatk_haplotypecaller_interval:
+    mem_mb: attempt * 8000                  # 4.0 GB → 8 GB 
+    mem_mb_reduced: (attempt * 8000) * 0.9
+    runtime: attempt * 480                  # 4h → 8h
+  # per cohort -- start here, increase if needed. Will need more resources for larger datasets
+  gatk_genomics_db_import:                  
+    mem_mb: attempt * 24000   
+    mem_mb_reduced: (attempt * 24000) * 0.9
+    runtime: attempt * 480                  
+  gatk_genotype_gvcfs:
+    mem_mb: attempt * 16000                 
+    mem_mb_reduced: (attempt * 16000) * 0.9
+    runtime: attempt * 480
 
-#   # Summary Stats
-#   bam_sumstats:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   collect_covstats:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   collect_fastp_stats:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   collect_sumstats:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
+# --- Hard filtering ---
+  variant_filtration:
+    mem_mb: attempt * 16000                 # start here, adjust if needed
+    runtime: attempt * 480                  # start here, adjust if needed
 
-#   # QC Module
-#   qc_admixture:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   qc_check_fai:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   qc_generate_coords_file:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   qc_plink:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   qc_qc_plots:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   qc_setup_admixture:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   qc_subsample_snps:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   qc_vcftools_individuals:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-
-#   # MK Module
-#   mk_degenotate:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   mk_prep_genome:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   mk_split_samples:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-
-#   # Postprocess Module
-#   postprocess_strict_filter:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   postprocess_basic_filter:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   postprocess_filter_individuals:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   postprocess_subset_indels:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   postprocess_subset_snps:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   postprocess_update_bed:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-
-#   # Trackhub Module
-#   trackhub_bcftools_depth:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   trackhub_bedgraph_to_bigwig:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   trackhub_calc_pi:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   trackhub_calc_snpden:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   trackhub_calc_tajima:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   trackhub_chrom_sizes:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   trackhub_convert_to_bedgraph:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   trackhub_strip_vcf:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   trackhub_vcftools_freq:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   trackhub_write_hub_files:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-
-#   # Sentieon Tools
-#   sentieon_map:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   sentieon_dedup:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   sentieon_haplotyper:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   sentieon_combine_gvcf:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
-#   sentieon_bam_stats:
-#     mem_mb: attempt * 2000
-#     slurm_partition:
-#     runtime:
-#     cpus_per_task:
+# =============================================================================
+# OTHER RULE NAMES
+# They're listed here so that if one ever TIMEOUTs or OOMs you can copy it up into set-resources with real numbers.
+# =============================================================================
+#   bam_stats                       fast (<2 hours) and light
+#   parse_bam_stats                 trivial
+#   index_bam_csi                   trivial
+#   merge_library_bams    
+#   merge_dedup_libraries 
+#   concat_interval_gvcfs           trivial
+#   concat_interval_vcfs            runs twice, trivial
+#   mosdepth                        
+#   coverage_bed                    trivial
+#   mappability_bed                 trivial
+#   callable_coverage_thresholds    trivial
+#   clam_collect                    trivial
+#   intervals_picard                trivial
+#   intervals_db                    trivial
+#   intervals_gvcf                  trivial
+#   intervals_filter                trivial
+#
+# If a rule you run isn't in this file at all, it simply uses default-resources.
+# =============================================================================

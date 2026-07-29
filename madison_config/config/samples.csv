@@ -1,3 +1,4 @@
-﻿BioSample,LibraryName,Run,refGenome,refPath,BioProject,fq1,fq2,SampleType
-Manul5,Manul5,SRR28606172,OtoMan_p1.0,/scratch/gpfs/ml9889/intro_to_snparcher_on_della/data/genome/GCA_028564725.2_OtoMan_p1.0_genomic.fna,1,/scratch/gpfs/ml9889/intro_to_snparcher_on_della/data/fastq/SRR28606172_1.fastq.gz,/scratch/gpfs/ml9889/intro_to_snparcher_on_della/data/fastq/SRR28606172_2.fastq.gz,include 
-Oman10,Oman10,SRR5043308,OtoMan_p1.0,/scratch/gpfs/ml9889/intro_to_snparcher_on_della/data/genome/GCA_028564725.2_OtoMan_p1.0_genomic.fna,1,/scratch/gpfs/ml9889/intro_to_snparcher_on_della/data/fastq/SRR5043308_1.fastq.gz,/scratch/gpfs/ml9889/intro_to_snparcher_on_della/data/fastq/SRR5043308_2.fastq.gz,include 
+sample_id,input_type,input,library_id,mark_duplicates
+GNP0045B,fastq,/scratch/gpfs/CAMPBELLSTATON/ml9889/elephant/published_elephant_genomes/PRJNA761769_CampbellStaton_2021/fastqs/SRR15902576_1.fastq.gz;/scratch/gpfs/CAMPBELLSTATON/ml9889/elephant/published_elephant_genomes/PRJNA761769_CampbellStaton_2021/fastqs/SRR15902576_2.fastq.gz,GNP0045B,true
+AENP001,fastq,/scratch/gpfs/CAMPBELLSTATON/ml9889/elephant/raw_seq_data/2024_QB3/SCSMRL01AENP001_S32_R1.fastq.gz;/scratch/gpfs/CAMPBELLSTATON/ml9889/elephant/raw_seq_data/2024_QB3/SCSMRL01AENP001_S32_R2.fastq.gz,AENP001,true
+KNP02_123,fastq,/scratch/gpfs/CAMPBELLSTATON/ml9889/elephant/raw_seq_data/deliv_Campbell_Staton_EXT_042326_raw/KNP02_123_R1.fastq.gz;/scratch/gpfs/CAMPBELLSTATON/ml9889/elephant/raw_seq_data/deliv_Campbell_Staton_EXT_042326_raw/KNP02_123_R2.fastq.gz,KNP02_123,true
